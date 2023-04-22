@@ -10,12 +10,38 @@
         #startagain {
             display: none;
         }
+        h3{
+            font-size: 14px;
+            font-family: "Lucida Console", "Courier New", monospace;
+        }
+        button {
+            -webkit-transition-duration: 0.4s; /* Safari */
+            transition-duration: 0.4s;
+            border:none;
+            color: black;
+
+        }
+        button:hover {
+            box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+        }
+        button:hover {
+            background-color: #4CAF50; /* Green */
+            color: white;
+        }
     </style>
 </head>
 <body>
-    <header>
-        <button id="startgame" style="margin-right: 20px;">开始游戏</button>
-        <button id="startagain" >重新开始</button>
+    <header style="display: flex;">
+        <div>
+            <button id="startgamebutton" style="margin-right: 20px;">开始游戏</button>
+            <button id="startagain">继续</button>
+            <button id="showabout">关于</button>
+        </div>
+        <div class="spacer" style="flex: 1;"></div>
+        <div>
+            <h3>等级：<span id="level"></span></h3>
+            <h3>找到次数：<span id="times"></span></h3>
+        </div>
     </header>
     <img id="tcg" src="../taochigui.jpg" alt="taochigui">
     <audio id="whisper" src="../whisper.mp3"></audio>
@@ -23,27 +49,61 @@
     <audio id="large" src="../large.mp3"></audio>
     <audio id="shout" src="../shout.mp3"></audio>
     <audio id="mei" src="../mei.mp3"></audio>
-    
+    <audio id="ding" src="../ding.mp3"></audio>
+    <audio id="nenxin" src="../nenxin.mp3"></audio>
     
     
     
     
     <script>
 
+        alert('请调低音量！！！！');
+        let found = 0;
         let tcgX,tcgY;
         let whisper = document.getElementById("whisper");
         let normal = document.getElementById("normal");
         let large = document.getElementById("large");
         let shout = document.getElementById("shout");
-        let mei = document.getElementById("mei")
+        let mei = document.getElementById("mei");
+        let ding = document.getElementById("ding");
+        let nenxin = document.getElementById("nenxin");
+        let about = document.getElementById("showabout");
         let currentSound = null;
-
+    
         let tcg = document.getElementById("tcg");
         let startagain = document.getElementById("startagain")
-        window.onload = function(){
-            update();
+        let level;
+
+        //弹出关于按钮
+        var text = "乔bo者，吾班之佼佼者也。其貌hen扬，而神采飞扬；其学无涯，而成绩优良。喜以bobo为戏，而人皆乐之。又喜以顶和美为赞，而人皆敬之。或曰：乔bo之为人，可谓风流才子,篮球之徒也。";
+        about.onclick = function() {
+            alert(text);
         };
 
+
+
+
+
+        //更新等级
+        function updateLevel(){
+            if(found <=10){
+                level = "感觉不如原神";
+            }else if(found <=20){
+                level = "我觉得这就是一种自信";
+            }else if(found <= 30){
+                level = "一点小小的bobo震撼"
+            }
+            document.getElementById("level").innerHTML = level;
+        }
+        let times = document.querySelector("#times");
+
+
+        window.onload = function(){
+            update();
+            updateLevel();
+            times.textContent = found;
+        };
+        //更新图片位置
         function update(){
             tcgX = Math.random() * window.innerWidth;
             tcgY = Math.random() * window.innerHeight;
@@ -51,15 +111,15 @@
             var imageHeight = tcg.offsetHeight;
             tcg.style.left = (tcgX - imageWidth / 2) + "px";
             tcg.style.top = (tcgY - imageHeight / 2) + "px";
-            tcg.style.display = " none ";
+            tcg.style.display = " none";
         }
 
-        document.getElementById("startgame").addEventListener("click",startgame);
+        document.getElementById("startgamebutton").addEventListener("click",startgame);
         document.getElementById("startagain").addEventListener("click",startgame)
         function startgame(){
             update();
 
-            //计算距离，并且赋值
+            //计算距离，并且赋值，难度为 不如原神
             function handleMouseMove(event) {
                 let distance = Math.sqrt(Math.pow(event.clientX - tcgX, 2) + Math.pow(event.clientY - tcgY, 2));
                 if (distance < 100) {
@@ -72,8 +132,46 @@
                     currentSound = whisper;
                 }
             }
-            
-            document.addEventListener("mousemove", handleMouseMove);
+
+
+            //计算距离，难度为 妈妈生的
+            function handleMouseMovetwo(event){
+                let distance = Math.sqrt(Math.pow(event.clientX - tcgX, 2) + Math.pow(event.clientY - tcgY, 2));
+                if (distance < 300) {
+                    currentSound = shout;
+                } else if (distance < 600) {
+                    currentSound = large;
+                } else if(distance <800){
+                    currentSound = normal;
+                } else{
+                    currentSound = whisper;
+                }
+            }
+
+            //计算距离，难度为 赢麻了
+            function handleMouseMovethree(event){
+                let distance = Math.sqrt(Math.pow(event.clientX - tcgX, 2) + Math.pow(event.clientY - tcgY, 2));
+                if (distance < 400) {
+                    currentSound = shout;
+                } else if (distance < 800) {
+                    currentSound = large;
+                } else if(distance <900){
+                    currentSound = normal;
+                } else{
+                    currentSound = whisper;
+                }
+            }
+
+
+            if(found <= 10){
+                document.addEventListener("mousemove", handleMouseMove);
+            }else if(found <= 20){
+                document.addEventListener("mousemove",handleMouseMovetwo);
+            }else if(found <= 30){
+                document.addEventListener("mousemove",handleMouseMovethree);
+            }else{
+                document.addEventListener("mousemove",handleMouseMovethree);
+            }
 
             //鼠标停留播放声音
             setInterval(function() {
@@ -88,16 +186,41 @@
             });
             
             //点击图片，结束播放
-            document.addEventListener("click", function(event) {
+            document.addEventListener("click",handleClick);
+
+            function handleClick(event) {
                 let distance = Math.sqrt(Math.pow(event.clientX - tcgX, 2) + Math.pow(event.clientY - tcgY, 2));
                     if (distance  <= 50) {
                         tcg.style.display = " block ";
+                        startgamebutton.style.display = "none";
                         startagain.style.display = " block ";
                         currentSound = null;
-                        mei.play();
-                        document.removeEventListener("mousemove", handleMouseMove);//点击时移除监听
+                        found++;
+
+                        if(found <=3){
+                            document.removeEventListener("mousemove",handleMouseMove);
+                            mei.play();
+                        }else if(found <=6){
+                            document.removeEventListener("mousemove",handleMouseMovetwo);
+                            document.removeEventListener("mousemove",handleMouseMove);
+                            ding.play();
+                        }else if(found <= 9){
+                            document.removeEventListener("mousemove",handleMouseMovethree);
+                            document.removeEventListener("mousemove",handleMouseMovetwo);
+                            document.removeEventListener("mousemove",handleMouseMove);
+                            nenxin.play();
+                        }else{
+                            document.removeEventListener("mousemove",handleMouseMovethree);
+                            document.removeEventListener("mousemove",handleMouseMovetwo);
+                            document.removeEventListener("mousemove",handleMouseMove);
+                            nenxin.play();
+                        }
+                        
+                        times.textContent = found;
+                        document.removeEventListener("click",handleClick);
+                        updateLevel();
                     }
-            });
+            }
     }
     </script>
 </body>
